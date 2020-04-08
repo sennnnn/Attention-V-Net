@@ -1,0 +1,24 @@
+# file
+
+## local
+code/build/*
+code/backup/*
+code/dataset/*
+!code/dataset/dataset.py
+!code/*/foo.txt
+CSAE 2020/*
+!CSAE 2020/foo.txt
+*/dataset/*
+!*/dataset/dataset.py
+
+## global
+try.py
+
+# folder
+
+## global
+__pycache__/
+.vscode/
+build/
+
+## local
