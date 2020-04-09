@@ -40,9 +40,9 @@ if(ret_dict['task'] == 'train'):
     start_epoch = ret_dict['start_epoch']
     pattern = ret_dict['model_pattern']
     model_key = ret_dict['model']
-    batch_size = 4
+    batch_size = 2
     learning_rate = 0.0001
-    keep_prob = 0.1
+    keep_prob = 0.5
 
     frozen_model_path = "build/{}-{}/frozen_model".format(model_key, target)
     ckpt_path = "build/{}-{}/ckpt".format(model_key, target)

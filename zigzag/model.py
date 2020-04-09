@@ -458,13 +458,4 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
 
     return tuple(out_list)
 
-if __name__ == '__main__':
-    input = tf.placeholder(tf.float32, [None, 224, 224 ,1])
-    print(zigzag_unet(input, 7))
-    print(unet(input, 7))
-    print(vnet(input, 7))
-    print(r2unet(input, 7))
-    print(unetpp(input, 7))
-    print(cenet(input, 7))
-    print(attention_unet(input, 7))
     
