@@ -82,7 +82,7 @@ def args_process():
 
     a.add_val('--task', 'train')
 
-    model_dict = {'unet':'U-Net', 'r2u':'R2U-Net', 'att':'Attention U-Net', 'uplus':'UNet++', 'ce':'CE-Net', 'vnet':'V-Net'}
+    model_dict = {'unet':'U-Net', 'r2u':'R2U-Net', 'att':'Attention U-Net', 'uplus':'UNet++', 'ce':'CE-Net', 'vnet':'V-Net', 'zigzag': 'ZigZag-U-Net'}
 
     model_pattern_dict = {'ckpt':'ckpt', 'pb':'pb'}
 

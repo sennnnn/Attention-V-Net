@@ -26,7 +26,8 @@ class train_do(object):
         'Attention U-Net': attention_unet,
         'UNet++': unetpp,
         'CE-Net': cenet, 
-        'V-Net': vnet
+        'V-Net': vnet,
+        'ZigZag-U-Net': zigzag_unet
     }
     def __init__(self, last, pattern, model_key, pb_path, ckpt_path, num_class, initial_channel, target):
         self.graph = tf.Graph()

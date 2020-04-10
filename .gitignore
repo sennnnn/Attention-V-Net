@@ -1,9 +1,9 @@
 # file
 
 ## local
-code/build/*
-code/backup/*
-code/dataset/*
+*/build/*
+*/backup/*
+*/dataset/*
 !code/dataset/dataset.py
 !code/*/foo.txt
 CSAE 2020/*

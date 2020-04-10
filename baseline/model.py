@@ -420,18 +420,43 @@ def attention_unet(input, num_class, initial_channel=64, keep_prob=0.5):
 
     return o
 
-def mnet(input, num_class, initial_channel=64, keep_prob=0.5):
+def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     c = initial_channel
     o = input
-    pass
+    out_list = []
 
-def attention_guided_net(input, num_class, initial_channel=64, keep_prob=0.5):
-    pass
+    with tf.variable_scope('zigzag_1'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 4)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
 
-def multires_unet(input, num_class, initial_channel=64, keep_prob=0.5):
-    pass
+    with tf.variable_scope('zigzag_2'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
 
-def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
+    with tf.variable_scope('zigzag_3'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_4'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    # degree 0 Unet
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = CBR(o, num_class, kernel_size=1)
+
+    return o
+
+def _zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     c = initial_channel
     o = input
     out_list = []
@@ -458,13 +483,3 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
 
     return tuple(out_list)
 
-if __name__ == '__main__':
-    input = tf.placeholder(tf.float32, [None, 224, 224 ,1])
-    print(zigzag_unet(input, 7))
-    print(unet(input, 7))
-    print(vnet(input, 7))
-    print(r2unet(input, 7))
-    print(unetpp(input, 7))
-    print(cenet(input, 7))
-    print(attention_unet(input, 7))
-    

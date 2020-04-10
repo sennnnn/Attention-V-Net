@@ -32,7 +32,7 @@ class zigzag(object):
             loss_2 = tf.reduce_mean(ce(labels=self.label['label'], logits=self.predict['zigzag_2_output']))
             loss_3 = tf.reduce_mean(ce(labels=self.label['label'], logits=self.predict['zigzag_3_output']))
             loss_4 = tf.reduce_mean(ce(labels=self.label['label'], logits=self.predict['zigzag_4_output']))
-            self.loss = {'multi-task integreted loss': tf.reduce_mean(loss_1 + loss_2 + loss_3 + loss_4), \
+            self.loss = {'multi-task integreted loss': (loss_1 + loss_2 + loss_3 + loss_4)/4, \
                          'loss_1': loss_1, 'loss_2': loss_2, 'loss_3': loss_3, 'loss_4': loss_4, \
                          'loss': loss_4}
             

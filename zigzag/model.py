@@ -431,7 +431,7 @@ def attention_guided_net(input, num_class, initial_channel=64, keep_prob=0.5):
 def multires_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     pass
 
-def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
+def _zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     c = initial_channel
     o = input
     out_list = []
@@ -458,4 +458,30 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
 
     return tuple(out_list)
 
+def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    out_list = []
+
+    with tf.variable_scope('zigzag_1'):
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o = tf.identity(o, name='output')
+        out_list.append(o)
+
+    with tf.variable_scope('zigzag_2'):
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o = tf.identity(o, name='output')
+        out_list.append(o)
+
+    with tf.variable_scope('zigzag_3'):
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o = tf.identity(o, name='output')
+        out_list.append(o)
+
+    with tf.variable_scope('zigzag_4'):
+        o = _unet_(o, num_class, c, keep_prob, 4)
+        o = tf.identity(o, name='output')
+        out_list.append(o)
+
+    return tuple(out_list)
     

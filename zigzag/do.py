@@ -51,7 +51,7 @@ if(ret_dict['task'] == 'train'):
     train_path_list,valid_path_list = read_train_valid_data("dataset/{}_train_dataset.txt".format(target), valid_rate=0.3, ifrandom=True)
     one_epoch_steps = len(train_path_list)//batch_size
     decay_patientce = 3
-    valid_step = 5
+    valid_step = 10
 
     # input_shape is the shape of numpy array, but it isn't same as the opencv.
     # I hate opencv.
