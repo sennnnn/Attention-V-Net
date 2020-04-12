@@ -13,6 +13,9 @@ CSAE 2020/*
 
 ## global
 try.py
+*.zip
+*.rar
+*.7z
 
 # folder
 

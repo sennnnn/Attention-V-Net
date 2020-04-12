@@ -73,7 +73,6 @@ def r2_block(input, filters, t):
     input = CBR(input, filters, kernel_size=1)
     raw = input
     input = r_block(input, filters, t)
-    input = r_block(input, filters, t)
 
     return input + raw
 
@@ -116,6 +115,28 @@ def attention_gate_block(input_g, input_l, f_in):
     fuse = tf.nn.sigmoid(fuse)
 
     return out*fuse
+
+def channel_attention_block(input):
+    """
+    SE block implementation.
+    What's more,the operations in this function will be in the channel variable scope.
+    Args:
+        input:tensor that will be operated.
+    Return:
+        input:input * channel weight.
+    """
+    c = input.get_shape().as_list()[-1]
+    weight = tf.reduce_mean(input, [1, 2])
+    weight = layers.flatten(weight)
+    weight = layers.dense(weight, c//2)
+    weight = tf.nn.leaky_relu(weight, alpha=LEAKY_RELU, name='ac')
+    weight = layers.dense(weight, c)
+    weight = tf.nn.leaky_relu(weight, alpha=LEAKY_RELU, name='ac')
+    weight = tf.reshape(weight, [-1, 1, 1, c])
+    input = input*weight
+    input = layers.batch_normalization(input, momentum=DECAY_BATCH_NORM, epsilon=EPSILON)
+    
+    return input
 
 def _unet_(input, num_class, initial_channel=64, keep_prob=0.5, degree=4):
     c = initial_channel
@@ -169,6 +190,37 @@ def unet(input, num_class, initial_channel=64, keep_prob=0.5):
         o = CBR(o, c)
         o = CBR(o, c)
     
+    o = CBR(o, num_class, kernel_size=1)
+    o = tf.identity(o, name='output')
+
+    return o
+
+def seunet(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    fuse_list = []
+
+    for i in range(4):
+        o = CBR(o, c)
+        o = channel_attention_block(o)
+        o = CBR(o, c)
+        fuse_list.append(o)
+        o = CBR(o, c, strides=2)
+        c = c*2
+
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = tf.nn.dropout(o, keep_prob=keep_prob)
+    o = CBR(o, c)
+
+    for i in range(4)[::-1]:
+        c = c//2
+        o = upsampling(o, c)
+        o = tf.concat([fuse_list[i], o], axis=-1)
+        o = CBR(o, c)
+        o = channel_attention_block(o)
+        o = CBR(o, c)
+
     o = CBR(o, num_class, kernel_size=1)
     o = tf.identity(o, name='output')
 
@@ -243,6 +295,92 @@ def vnet(input, num_class, initial_channel=64, keep_prob=0.5):
     res_o = o
     o = tf.concat([fuse1, o], axis=-1)
     o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+
+    o = CBR(o, num_class, kernel_size=1)
+    o = tf.identity(o, name='output')
+
+    return o
+
+def sevnet(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    
+    o = CBR(o, c)
+    res_o = o
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse1 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse2 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse3 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse4 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+    
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = tf.nn.dropout(o, keep_prob=keep_prob)
+    o = CBR(o, c)
+
+    c = c//2
+    o = upsampling(o, c)
+    res_o = o
+    o = tf.concat([fuse4, o], axis=-1)
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    res_o = o
+    o = tf.concat([fuse3, o], axis=-1)
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    res_o = o
+    o = tf.concat([fuse2, o], axis=-1)
+    o = CBR(o, c)
+    o = channel_attention_block(o)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    res_o = o
+    o = tf.concat([fuse1, o], axis=-1)
+    o = CBR(o, c)
+    o = channel_attention_block(o)
     o = CBR(o, c)
     o = res_o + o
 
@@ -453,6 +591,62 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     o = CBR(o, c)
     o = CBR(o, c)
     o = CBR(o, num_class, kernel_size=1)
+
+    return o
+
+def zigzag_unet_regular(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    out_list = []
+
+    with tf.variable_scope('zigzag_1'):
+        o = _unet_(o, num_class, c, keep_prob, 4)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_2'):
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_3'):
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_4'):
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o = tf.identity(o, name='output')
+
+    # degree 0 Unet
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = CBR(o, num_class, kernel_size=1)
+
+    return o
+
+def zigzag_unet_regular_reverse(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    out_list = []
+
+    # degree 0 Unet
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = CBR(o, num_class, kernel_size=1)
+
+    with tf.variable_scope('zigzag_1'):
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_2'):
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_3'):
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_4'):
+        o = _unet_(o, num_class, c, keep_prob, 4)
+        o = tf.identity(o, name='output')
 
     return o
 

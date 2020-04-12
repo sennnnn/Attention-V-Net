@@ -27,7 +27,11 @@ class train_do(object):
         'UNet++': unetpp,
         'CE-Net': cenet, 
         'V-Net': vnet,
-        'ZigZag-U-Net': zigzag_unet
+        'SEU-Net': seunet,
+        'SEV-Net': sevnet,
+        'ZigZag-U-Net': zigzag_unet,
+        'ZigZag-U-Net-regular': zigzag_unet_regular,
+        'ZigZag-U-Net-regular-reverse': zigzag_unet_regular_reverse
     }
     def __init__(self, last, pattern, model_key, pb_path, ckpt_path, num_class, initial_channel, target):
         self.graph = tf.Graph()
