@@ -24,12 +24,12 @@ class train_do(object):
         'U-Net': unet, 
         'R2U-Net': r2unet,
         'Attention U-Net': attention_unet,
+        'Attention V-Net': attention_vnet,
         'UNet++': unetpp,
         'CE-Net': cenet, 
         'V-Net': vnet,
-        'SEU-Net': seunet,
-        'SEV-Net': sevnet,
         'ZigZag-U-Net': zigzag_unet,
+        'ZigZag-U-Net-dense': zigzag_unet_dense,
         'ZigZag-U-Net-regular': zigzag_unet_regular,
         'ZigZag-U-Net-regular-reverse': zigzag_unet_regular_reverse
     }

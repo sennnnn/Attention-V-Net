@@ -548,12 +548,101 @@ def attention_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     for index in range(4)[::-1]:
         c = c//2
         input = upsampling(input, c)
-        fuse = attention_gate_block(input, fuse_list[index], c//2)
+        fuse = attention_gate_block(input, fuse_list[index], c)
         input = tf.concat([fuse, input], axis=-1)
         input = CBR(input, c)
         input = CBR(input, c)
 
     o = CBR(input, num_class, kernel_size=1)
+    o = tf.identity(o, name='output')
+
+    return o
+
+def attention_vnet(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    
+    o = CBR(o, c)
+    res_o = o
+    o = CBR(o, c)
+    o = res_o + o
+    fuse1 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse2 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse3 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+
+    res_o = o
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+    fuse4 = o
+    c = c*2
+    o = CBR(o, c, strides=2)
+    
+    o = CBR(o, c)
+    o = tf.nn.dropout(o, keep_prob=keep_prob)
+    o = CBR(o, c)
+
+    c = c//2
+    o = upsampling(o, c)
+    temp = fuse4
+    fuse4 = attention_gate_block(o, fuse4, c)
+    fuse4 = temp + fuse4
+    res_o = o
+    o = tf.concat([fuse4, o], axis=-1)
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    temp = fuse3
+    fuse3 = attention_gate_block(o, fuse3, c)
+    fuse3 = temp + fuse3
+    res_o = o
+    o = tf.concat([fuse3, o], axis=-1)
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    temp = fuse2
+    fuse2 = attention_gate_block(o, fuse2, c)
+    fuse2 = temp + fuse2
+    res_o = o
+    o = tf.concat([fuse2, o], axis=-1)
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+
+    c = c//2
+    o = upsampling(o, c)
+    temp = fuse1
+    fuse1 = attention_gate_block(o, fuse1, c)
+    fuse1 = temp + fuse1
+    res_o = o
+    o = tf.concat([fuse1, o], axis=-1)
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = res_o + o
+
+    o = CBR(o, num_class, kernel_size=1)
     o = tf.identity(o, name='output')
 
     return o
@@ -586,6 +675,37 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
         o = _unet_(o, num_class, c, keep_prob, 1)
         o = o + shortcut
         o = tf.identity(o, name='output')
+
+    # degree 0 Unet
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = CBR(o, num_class, kernel_size=1)
+
+    return o
+
+def zigzag_unet_dense(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o0 = input
+    o = input
+
+    with tf.variable_scope('zigzag_1'):
+        o = _unet_(o, num_class, c, keep_prob, 4)
+        o1 = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_2'):
+        o = tf.concat([o1, o0], axis=-1)
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o2 = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_3'):
+        o = tf.concat([o2, o1, o0], axis=-1)
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o3 = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_4'):
+        o = tf.concat([o3, o2, o1, o0], axis=-1)
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o4 = tf.identity(o, name='output')
 
     # degree 0 Unet
     o = CBR(o, c)
