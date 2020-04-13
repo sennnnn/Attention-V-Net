@@ -83,7 +83,7 @@ def args_process():
     a.add_val('--task', 'train')
 
     model_dict = {'unet': 'U-Net', 'r2u': 'R2U-Net', 'att': 'Attention U-Net', 'uplus': 'UNet++', 'ce': 'CE-Net', 'vnet': 'V-Net', \
-                  'zigzag': 'ZigZag-U-Net', 'zigzag_r': 'ZigZag-U-Net-regular', 'zigzag_r_r': 'ZigZag-U-Net-regular-reverse', \
+                  'zigzag_re': 'ZigZag-U-Net-residual', 'zigzag_re_r': 'ZigZag-U-Net-residual-reverse', 'zigzag_r': 'ZigZag-U-Net-regular', 'zigzag_r_r': 'ZigZag-U-Net-regular-reverse', \
                   'zigzag_d': 'ZigZag-U-Net-dense', 'attv': 'Attention V-Net'}
 
     model_pattern_dict = {'ckpt':'ckpt', 'pb':'pb'}

@@ -647,7 +647,7 @@ def attention_vnet(input, num_class, initial_channel=64, keep_prob=0.5):
 
     return o
 
-def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
+def zigzag_unet_residual(input, num_class, initial_channel=64, keep_prob=0.5):
     c = initial_channel
     o = input
     out_list = []
@@ -673,6 +673,42 @@ def zigzag_unet(input, num_class, initial_channel=64, keep_prob=0.5):
     with tf.variable_scope('zigzag_4'):
         shortcut = o
         o = _unet_(o, num_class, c, keep_prob, 1)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    # degree 0 Unet
+    o = CBR(o, c)
+    o = CBR(o, c)
+    o = CBR(o, num_class, kernel_size=1)
+
+    return o
+
+def zigzag_unet_residual_reverse(input, num_class, initial_channel=64, keep_prob=0.5):
+    c = initial_channel
+    o = input
+    out_list = []
+
+    with tf.variable_scope('zigzag_1'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 1)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_2'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 2)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_3'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 3)
+        o = o + shortcut
+        o = tf.identity(o, name='output')
+
+    with tf.variable_scope('zigzag_4'):
+        shortcut = o
+        o = _unet_(o, num_class, c, keep_prob, 4)
         o = o + shortcut
         o = tf.identity(o, name='output')
 

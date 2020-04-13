@@ -23,5 +23,6 @@ try.py
 __pycache__/
 .vscode/
 build/
+backup/
 
 ## local

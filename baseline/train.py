@@ -28,7 +28,8 @@ class train_do(object):
         'UNet++': unetpp,
         'CE-Net': cenet, 
         'V-Net': vnet,
-        'ZigZag-U-Net': zigzag_unet,
+        'ZigZag-U-Net-residual': zigzag_unet_residual,
+        'ZigZag-U-Net-residual-reverse': zigzag_unet_residual_reverse,
         'ZigZag-U-Net-dense': zigzag_unet_dense,
         'ZigZag-U-Net-regular': zigzag_unet_regular,
         'ZigZag-U-Net-regular-reverse': zigzag_unet_regular_reverse

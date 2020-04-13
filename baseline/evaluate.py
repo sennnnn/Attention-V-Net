@@ -7,7 +7,9 @@ from arg_parser import arg_parser
 a = arg_parser()
 
 metric_dict = {'Precision': Precision, 'IoU': IOU, 'DSC': DSC};metric_keys = list(metric_dict.keys())
-model_dict = {'unet':'U-Net', 'r2u':'R2U-Net', 'att':'Attention U-Net', 'uplus':'UNet++', 'ce':'CE-Net', 'vnet':'V-Net', 'attv': 'Attention V-Net'}
+model_dict = {'unet': 'U-Net', 'r2u': 'R2U-Net', 'att': 'Attention U-Net', 'uplus': 'UNet++', 'ce': 'CE-Net', 'vnet': 'V-Net', \
+              'zigzag_re': 'ZigZag-U-Net-residual', 'zigzag_re_r': 'ZigZag-U-Net-residual-reverse', 'zigzag_r': 'ZigZag-U-Net-regular', 'zigzag_r_r': 'ZigZag-U-Net-regular-reverse', \
+              'zigzag_d': 'ZigZag-U-Net-dense', 'attv': 'Attention V-Net'}
 target_dict = {'HN_OAR': 'HaN_OAR', 'Lu_OAR': 'Thoracic_OAR', 'HN_GTV': 'Naso_GTV', 'Lu_GTV': 'Lung_GTV'}
 num_class_dict = {'HaN_OAR': 23, 'Thoracic_OAR': 7, 'Lung_GTV': 2, 'Naso_GTV': 2}
 
