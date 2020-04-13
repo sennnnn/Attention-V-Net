@@ -8,7 +8,7 @@ from util import readImage,readNiiAll,saveInfo
 from arg_parser import arg_parser
 
 nii_root_path = r'E:\dataset\zhongshan_hospital\CSTRO'
-npzy_root_path = r'.'
+npzy_root_path = r''
 
 target_list = ['Thoracic_OAR', 'HaN_OAR', 'Lung_GTV', 'Naso_GTV']
 

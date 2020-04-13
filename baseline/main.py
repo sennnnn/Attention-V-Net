@@ -62,7 +62,7 @@ if(ret_dict['task'] == 'train'):
                              num_class, initial_channel, target)
 
     train_object.training(learning_rate, max_epoches, len(train_path_list)//batch_size, \
-                          start_epoch, train_batch_generator, valid_batch_generator, 3, 5, keep_prob, config)
+                          start_epoch, train_batch_generator, valid_batch_generator, 5, 5, keep_prob, config)
 
 elif(ret_dict['task'] == 'test'):
 
