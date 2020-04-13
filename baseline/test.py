@@ -14,11 +14,11 @@ class test_do(object):
         self.target = target
         self.test_result_root_path = 'build/{}-{}/test_result/{}'.format(model_key, target, pb_name)
         if(not os.path.exists(self.test_result_root_path)):
-            os.makedirs(self.test_result_root_path, 0x777)
+            os.makedirs(self.test_result_root_path, 0o700)
 
     def _predict_argmax_recover_to_nii(self, predict_argmax_recover, save_dir_path, info_dict):
         if(not os.path.exists(save_dir_path)):
-            os.makedirs(save_dir_path, 0x777)
+            os.makedirs(save_dir_path, 0o700)
         save_path = save_dir_path + '/predict.nii.gz'
         saveAsNiiGz(predict_argmax_recover, save_path, info_dict['spacing'], info_dict['origin'])
 

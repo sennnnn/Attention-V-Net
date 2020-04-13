@@ -41,7 +41,7 @@ if(ret_dict['task'] == 'train'):
     pattern = ret_dict['model_pattern']
     model_key = ret_dict['model']
     batch_size = 2
-    learning_rate = 0.0001
+    learning_rate = 0.000025
     keep_prob = 0.5
 
     frozen_model_path = "build/{}-{}/frozen_model".format(model_key, target)

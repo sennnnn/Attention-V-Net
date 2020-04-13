@@ -7,7 +7,7 @@ from arg_parser import arg_parser
 a = arg_parser()
 
 metric_dict = {'Precision': Precision, 'IoU': IOU, 'DSC': DSC};metric_keys = list(metric_dict.keys())
-model_dict = {'unet':'U-Net', 'r2u':'R2U-Net', 'att':'Attention U-Net', 'uplus':'UNet++', 'ce':'CE-Net', 'vnet':'V-Net'}
+model_dict = {'unet':'U-Net', 'r2u':'R2U-Net', 'att':'Attention U-Net', 'uplus':'UNet++', 'ce':'CE-Net', 'vnet':'V-Net', 'attv': 'Attention V-Net'}
 target_dict = {'HN_OAR': 'HaN_OAR', 'Lu_OAR': 'Thoracic_OAR', 'HN_GTV': 'Naso_GTV', 'Lu_GTV': 'Lung_GTV'}
 num_class_dict = {'HaN_OAR': 23, 'Thoracic_OAR': 7, 'Lung_GTV': 2, 'Naso_GTV': 2}
 
@@ -20,7 +20,7 @@ model_key = ret_dict['--model']
 target = ret_dict['--target']
 num_class = num_class_dict[target]
 
-label_root_path = os.path.join(r'E:\dataset\zhongshan_hospital\CSTRO\test', target)
+label_root_path = os.path.join(r'/home/czs/dataset/cstro/test', target)
 test_list = os.listdir(label_root_path)
 predict_root_path = get_newest(os.path.join('build', '{}-{}'.format(model_key, target), 'test_result'))
 
