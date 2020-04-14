@@ -134,3 +134,22 @@ def one_hot(nparray, depth=0, on_value=1, off_value=0):
     out[tuple(indices)] = on_value
 
     return out
+
+def parse_metric_txt(file_path):
+    ret_dict = None
+    with open(file_path, 'r') as f:
+        lines = f.readlines()
+        ret_dict = {x:[] for x in lines[0].strip().split()}
+        key_list = list(ret_dict.keys())
+        lines = lines[1:]
+        for line in lines:
+            line = line.strip()
+            line = line.split()
+            for i in range(len(line)):
+                if(i != 0):
+                    temp = float(line[i])
+                else:
+                    temp = line[i]
+                ret_dict[key_list[i]].append(temp)
+    
+    return ret_dict

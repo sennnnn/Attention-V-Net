@@ -22,7 +22,7 @@ model_key = ret_dict['--model']
 target = ret_dict['--target']
 num_class = num_class_dict[target]
 
-label_root_path = os.path.join(r'/home/czs/dataset/cstro/test', target)
+label_root_path = os.path.join(r'E:\dataset\zhongshan_hospital\CSTRO\test', target)
 test_list = os.listdir(label_root_path)
 predict_root_path = get_newest(os.path.join('build', '{}-{}'.format(model_key, target), 'test_result'))
 
