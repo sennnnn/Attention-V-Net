@@ -153,3 +153,14 @@ def parse_metric_txt(file_path):
                 ret_dict[key_list[i]].append(temp)
     
     return ret_dict
+
+def findMaxContours(src):
+    # 输入二值化图像，查找图像轮廓最大面积，当比较小的时候就不做一些处理
+    contours, _ = cv2.findContours(src, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
+    area = []
+    if(len(contours) == 0):
+        return 0
+    for k in range(len(contours)):
+        area.append(cv2.contourArea(contours[k]))
+
+    return area[np.argmax(np.array(area))]

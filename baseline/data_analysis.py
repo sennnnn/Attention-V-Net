@@ -22,11 +22,13 @@ model_key = ret_dict['--model']
 target = ret_dict['--target']
 
 work_path = get_newest(os.path.join('build', '{}-{}'.format(model_key, target), 'test_result'))
+pb_name = os.path.split(work_path)[1]
+work_process_path = os.path.join('build', '{}-{}'.format(model_key, target), 'test_result_process', pb_name)
 
 metric_list = ['DSC']
 
-for metric in metric_list:
-    analysis_path = 'build/{}-analysis.xlsx'.format(metric)
+def do(metric, extra_name, model_key, target, base_path):
+    analysis_path = 'build/{}{}-analysis.xlsx'.format(metric, extra_name)
 
     if(os.path.exists(analysis_path)):
         wb = load_workbook(analysis_path)
@@ -35,7 +37,7 @@ for metric in metric_list:
 
     ws = wb.create_sheet('{}-{}'.format(model_key, target))
 
-    work_file_path = os.path.join(work_path, '{}.txt'.format(metric))
+    work_file_path = os.path.join(base_path, '{}.txt'.format(metric))
     evaluate_result_dict = parse_metric_txt(work_file_path)
 
     key_list = list(evaluate_result_dict.keys())
@@ -47,3 +49,7 @@ for metric in metric_list:
             ws.cell(j + 2, i + 1).value = target_result[j]
     
     wb.save(analysis_path)
+
+for metric in metric_list:
+    do(metric, '', model_key, target, work_path)
+    do(metric, '-process', model_key, target, work_process_path)

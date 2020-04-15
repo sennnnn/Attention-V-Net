@@ -52,7 +52,7 @@ class test_do(object):
                         patient_test_label.append(label[i])
                 patient_test_label = np.array(patient_test_label)
                 patient_test_argmax_recover = recover(patient_test_argmax, patient_test_label.shape[:3], \
-                                                      ifprocess, num_class, crop_x_range, crop_y_range, resize_shape)
+                                                      ifprocess, num_class, crop_x_range, crop_y_range, resize_shape, self.target)
                 patient_test_argmax_recover = patient_test_argmax_recover.astype(np.uint8)
                 test_result_save_dir_path = '{}/{}'.format(self.test_result_root_path, patient_name)
                 self._predict_argmax_recover_to_nii(np.argmax(patient_test_argmax_recover, axis=-1), \

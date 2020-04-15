@@ -201,7 +201,7 @@ class test_generator(object):
         for patient_name in self.test_data.keys():
             yield (patient_name, self.test_data[patient_name]['nii_info'], self.__iter__(patient_name))
 
-def recover(patient_mask_predict, shape, ifprocess, num_class, crop_x_range, crop_y_range, resize_shape):
+def recover(patient_mask_predict, shape, ifprocess, num_class, crop_x_range, crop_y_range, resize_shape, target):
     length = len(patient_mask_predict)
     w = crop_x_range[1]-crop_x_range[0]
     h = crop_y_range[1]-crop_y_range[0]
@@ -214,7 +214,7 @@ def recover(patient_mask_predict, shape, ifprocess, num_class, crop_x_range, cro
     # After postprocessing...
     temp = one_hot(temp, num_class)
     if(ifprocess):
-        temp = np.array([after_process(temp[i]) for i in range(temp.shape[0])])
+        temp = np.array([after_process(temp[i], target) for i in range(temp.shape[0])])
 
     return temp
 
@@ -230,64 +230,7 @@ def erode(src, kernel_size=(3, 3)):
 
     return dst
 
-def left_lung_after_process(src, benchmark):
-    # 输入的是一张slice，src为左肺切片，benchmark为右肺切片
-    # 即将右肺预测到左肺的部分给去掉
-    begin = 0
-    end = 0
-    # 首先获得搜索开始的y轴下标
-    for i in range(src.shape[1]):
-        if(np.max(src[:,i]) != 0):
-            begin = i
-            break
-
-    for j in range(begin, src.shape[1]):
-        if(np.max(src[:,j]) == 0):
-            end = j
-            break
-
-    for k in range(begin, end):
-        for x_index in range(src.shape[0]):
-            if(benchmark[x_index,k] != 0):
-                src[x_index,k] = 2
-
-    return src
-    
-def right_lung_after_process(src, benchmark):
-    # 输入的是一张slice，src为右肺切片，benchmark为左肺切片
-    # 即将左肺预测到右肺的部分给去掉
-    begin = 0
-    end = 0
-    # 首先获得搜索开始的y轴下标 
-    for i in range(src.shape[1])[::-1]:
-        if(np.max(src[:,i]) != 0):
-            begin = i
-            break
-
-    for j in range(begin)[::-1]:
-        if(np.max(src[:,j]) == 0):
-            end = j
-            break
-
-    for k in range(end, begin)[::-1]:
-        for x_index in range(src.shape[0]):
-            if(benchmark[x_index,k] != 0):
-                src[x_index,k] = 2
-
-    return src
-
-def findMaxContours(src):
-    # 输入二值化图像，查找图像轮廓最大面积，当比较小的时候就不做一些处理
-    contours, _ = cv2.findContours(src, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
-    area = []
-    if(len(contours) == 0):
-        return 0
-    for k in range(len(contours)):
-        area.append(cv2.contourArea(contours[k]))
-
-    return area[np.argmax(np.array(area))]
-
-def after_process(one_slice):
+def after_process(one_slice, target):
     # after one_hot multi slice block
     # 这里只是用到了简单的形态学腐蚀，那么我们再假设，左肺最右点不可能有右肺，右肺最左点不可能有左肺
     # 搜索左肺最右点，即y最大点
@@ -297,13 +240,6 @@ def after_process(one_slice):
     for j in range(1,one_slice.shape[-1]):
         temp = np.expand_dims(erode(one_slice[...,j]), axis=-1)
         one_slice_mid_dst = np.concatenate([one_slice_mid_dst, temp], axis=-1)
-    # 左右肺排查，已经膨胀处理，这是针对肺部的操作
-    # 测试出来的有效面积
-    # if(task == "Thoracic_OAR"):
-    #     if(findMaxContours(one_slice_mid_dst[...,2]) > 800):
-    #         one_slice_mid_dst[...,2] = left_lung_after_process(one_slice_mid_dst[...,2],one_slice_mid_dst[...,1])
-    #     if(findMaxContours(one_slice_mid_dst[...,1]) > 800):
-    #         one_slice_mid_dst[...,1] = right_lung_after_process(one_slice_mid_dst[...,1],one_slice_mid_dst[...,2])
     
     one_slice_dst = np.expand_dims(one_slice_mid_dst[...,0], axis=-1)
     for j in range(1,one_slice.shape[-1]):
@@ -312,10 +248,73 @@ def after_process(one_slice):
     
     return one_slice_dst
 
-if __name__ == "__main__":
-    """
-    猛然意识到之前写得代码实在是太差了。
-    顺带一提，正在听：Если завтра война 
-    """
+def lung_process(left_lung_slice, right_lung_slice):
+    if(np.max(left_lung_slice) != 0):
+        begin = 0
+        last_time_flag = 0
+        dividing_line = 0
+        absolute_line = left_lung_slice.shape[1]//2 - 30
+        for j in range(left_lung_slice.shape[1])[::-1]:
+            flag = 0
+            for i in range(left_lung_slice.shape[0]):
+                if(left_lung_slice[i, j] == 1):
+                    flag = 1
+                    break
 
+            if(last_time_flag == 0 and flag == 1):
+                begin = j
+
+            if(last_time_flag == 1 and flag == 0):
+                dividing_line = j
+                break
+
+            last_time_flag = flag
+
+        dividing_line = absolute_line if(absolute_line > dividing_line) else dividing_line
+        for i in range(left_lung_slice.shape[0]):
+            for j in range(dividing_line, begin):
+                if(right_lung_slice[i, j] == 1):
+                    left_lung_slice[i, j] = 1
+                    right_lung_slice[i, j] = 0
+
+        if(np.max(left_lung_slice[:absolute_line]) != 0):
+            for i in range(left_lung_slice.shape[0]):
+                for j in range(absolute_line):
+                    if(left_lung_slice[i, j] == 1):
+                        right_lung_slice[i, j] = 1
+                        left_lung_slice[i, j] = 0
+
+    if(np.max(right_lung_slice) != 0):
+        begin = 0
+        last_time_flag = 0
+        dividing_line = 0
+        absolute_line = left_lung_slice.shape[1]//2 + 30
+        for j in range(right_lung_slice.shape[1]):
+            flag = 0
+            for i in range(right_lung_slice.shape[0]):
+                if(right_lung_slice[i, j] == 1):
+                    flag = 1
+                    break
             
+            if(last_time_flag == 0 and flag == 1):
+                begin = j
+
+            if(last_time_flag == 1 and flag == 0):
+                dividing_line = j
+                break
+
+            last_time_flag = flag
+
+        dividing_line = absolute_line if(absolute_line < dividing_line) else dividing_line
+        for i in range(right_lung_slice.shape[0]):
+            for j in range(begin, dividing_line):
+                if(left_lung_slice[i, j] == 1):
+                    right_lung_slice[i, j] = 1
+                    left_lung_slice[i, j] = 0
+
+        if(np.max(right_lung_slice[absolute_line:]) != 0):
+            for i in range(right_lung_slice.shape[0]):
+                for j in range(absolute_line, right_lung_slice.shape[1]):
+                    if(right_lung_slice[i, j] == 1):
+                        left_lung_slice[i, j] = 1
+                        right_lung_slice[i, j] = 0
